@@ -9,7 +9,7 @@ import {
   Heading,
   Input,
   Button,
-  Card, CardBody, Stack, CardHeader, Menu, MenuButton, MenuItem, MenuList, //ListIcon
+  Card, CardBody, Stack, CardHeader, Menu, MenuButton, MenuItem, MenuList, MenuGroup, MenuDivider, //ListIcon
 } from '@chakra-ui/react';
 import { ColorModeSwitcher } from './ColorModeSwitcher';
 import {Bar } from 'react-chartjs-2';
@@ -38,7 +38,9 @@ function Home() {
 
   const [vals, setVals] = useState([])
   const [vals2, setVals2] = useState([])
-  //const [addy, setAddy] = useState("")
+  const [menuSelectedChoice, setMenuSelectedChoice] = useState("API Category")
+  //const [route, setRoute] = useState("")
+  const [addy, setAddy] = useState("")
 
   const options = {
       responsive: true,
@@ -93,13 +95,24 @@ function Home() {
     ],
   };
 
+  /*
+  function magic(){
+    setMenuSelectedChoice("Balance by Wallet")
+    if(menuSelectedChoice === "Balance by Wallet"){
+      setRoute(`${addy}/balance`)
+    }
+  }
+  */
   //0x895bBc29f74dF77279Bf585116Caa24CE33ed0bA
   function fA(){
 
     const options = {
       method: 'GET',
-      //url: `https://deep-index.moralis.io/api/v2/nft/${addy}/transfers`,
-      url: `https://deep-index.moralis.io/api/v2/nft/0x895bBc29f74dF77279Bf585116Caa24CE33ed0bA/transfers`,
+      //url: `https://deep-index.moralis.io/api/v2/${route}`,
+      //url: `https://deep-index.moralis.io/api/v2/0x1c06EC84aa3f8c48E98D7498AAa15F391857304A/balance`,
+      url: `https://deep-index.moralis.io/api/v2/nft/${addy}/transfers`,
+      //url: `https://deep-index.moralis.io/api/v2/{route}`,
+      //url: `https://deep-index.moralis.io/api/v2/nft/0x895bBc29f74dF77279Bf585116Caa24CE33ed0bA/transfers`,
       params: {chain: 'eth', format: 'decimal', normalizeMetadata: 'false'},
       headers: {accept: 'application/json', 'X-API-Key': process.env.REACT_APP_TEST_KEY}
     };
@@ -108,7 +121,7 @@ function Home() {
     .request(options)
     .then(function (response) {
 
-      
+      console.log(response.data.balance)
       var results = response.data.result
       
       const output = results.map((res) => ({b:res.block_timestamp.slice(0,10), ethvalue: Number(res.value)/Math.pow(10,18)}));
@@ -165,17 +178,23 @@ function Home() {
           <VStack spacing={4}>
             <Heading>NFT Data</Heading>
             <Stack direction={['column', 'row']} spacing='20px'>
-            <Menu>
-              <MenuButton as={Button}>
-                  API Category
+              <Menu>
+                <MenuButton as={Button}>
+                  {menuSelectedChoice}
                 </MenuButton>
                 <MenuList>
-                  <MenuItem>NFT</MenuItem>
-                  <MenuItem>Balance</MenuItem>
-                  <MenuItem>Events</MenuItem>
+                  <MenuGroup fontSize='md' title='Balance'>
+                    <MenuItem fontSize='sm' onClick={() => setMenuSelectedChoice("Balance by Wallet")}>Balance by Wallet</MenuItem>
+                    <MenuItem fontSize='sm' onClick={() => setMenuSelectedChoice("ERC20 Token Balance")}>ERC20 Token Balance</MenuItem>
+                  </MenuGroup>
+                  <MenuDivider />
+                  <MenuGroup fontSize='md' title='NFT'>
+                    <MenuItem fontSize='sm' onClick={() => setMenuSelectedChoice("Transfers by Contract")}>Transfers by Contract</MenuItem>
+                    <MenuItem fontSize='sm' onClick={() => setMenuSelectedChoice("Transfers by Wallet ")}>Transfers by Wallet</MenuItem>
+                  </MenuGroup>
                 </MenuList>
               </Menu>
-              <Input placeholder='enter contract address ...' size='md' width='30vw'/> 
+              <Input placeholder='enter contract address ...' size='md' width='30vw' onChange={(e) => setAddy(e.target.value)}/> 
               <Button onClick={fA}>Get Data</Button>
             </Stack>
             <Card width={"80vw"} height={"50vh"}>
