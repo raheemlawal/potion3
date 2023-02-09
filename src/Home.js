@@ -9,7 +9,7 @@ import {
   Heading,
   Input,
   Button,
-  Card, CardBody, Stack,CardHeader,
+  Card, CardBody, Stack, CardHeader, Menu, MenuButton, MenuItem, MenuList, //ListIcon
 } from '@chakra-ui/react';
 import { ColorModeSwitcher } from './ColorModeSwitcher';
 import {Bar } from 'react-chartjs-2';
@@ -165,6 +165,16 @@ function Home() {
           <VStack spacing={4}>
             <Heading>NFT Data</Heading>
             <Stack direction={['column', 'row']} spacing='20px'>
+            <Menu>
+              <MenuButton as={Button}>
+                  API Category
+                </MenuButton>
+                <MenuList>
+                  <MenuItem>NFT</MenuItem>
+                  <MenuItem>Balance</MenuItem>
+                  <MenuItem>Events</MenuItem>
+                </MenuList>
+              </Menu>
               <Input placeholder='enter contract address ...' size='md' width='30vw'/> 
               <Button onClick={fA}>Get Data</Button>
             </Stack>
