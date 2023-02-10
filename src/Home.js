@@ -9,7 +9,8 @@ import {
   Heading,
   Input,
   Button,
-  Card, CardBody, Stack, CardHeader, Menu, MenuButton, MenuItem, MenuList, MenuGroup, MenuDivider, //ListIcon
+  Card, CardBody, Stack, CardHeader, Menu, MenuButton, MenuItem, MenuList, MenuGroup, MenuDivider, FormErrorMessage, Center,
+  FormHelperText, FormControl //ListIcon
 } from '@chakra-ui/react';
 import { ColorModeSwitcher } from './ColorModeSwitcher';
 import { Bar } from 'react-chartjs-2';
@@ -26,6 +27,7 @@ function Home() {
   const [menuSelectedChoice, setMenuSelectedChoice] = useState("API Category")
   const [route, setRoute] = useState("")
   const [addy, setAddy] = useState("")
+  const [isError, setIsError] = useState(false)
 
   var queryToRoute = {
     "Transfers by Contract": `nft/${addy}/transfers`,
@@ -112,6 +114,12 @@ function Home() {
 
   function getBlockchainData(){
 
+    if (addy === "") {
+      setIsError(true)
+      console.log(isError)
+      return
+    }
+
     console.log(route)
     const options = {
       method: 'GET',
@@ -195,7 +203,19 @@ function Home() {
                   <MenuDivider />
                 </MenuList>
               </Menu>
-              <Input placeholder='enter contract address ...' size='md' width='30vw' onChange={(e) => setAddy(e.target.value)}/> 
+              <HStack>
+                <FormControl isInvalid={isError}>
+                  <Input type='text' value={addy} placeholder='enter contract address ...' size='md' width='30vw' onChange={(e) => setAddy(e.target.value)}/> 
+                  <Center>
+                    {!isError ? (
+                      <FormHelperText>
+                      </FormHelperText>
+                    ) : (
+                      <FormErrorMessage>invalid address</FormErrorMessage>
+                    )}
+                  </Center>
+                </FormControl>
+              </HStack>
               <Button onClick={getBlockchainData}>Get Data</Button>
             </Stack>
             <Card width={"80vw"} height={"50vh"}>
