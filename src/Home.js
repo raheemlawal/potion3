@@ -12,35 +12,26 @@ import {
   Card, CardBody, Stack, CardHeader, Menu, MenuButton, MenuItem, MenuList, MenuGroup, MenuDivider, //ListIcon
 } from '@chakra-ui/react';
 import { ColorModeSwitcher } from './ColorModeSwitcher';
-import {Bar } from 'react-chartjs-2';
+import { Bar } from 'react-chartjs-2';
 import axios from 'axios';
 import 'chartjs-adapter-date-fns';
 import Chart from 'chart.js/auto';
 import {TimeScale} from 'chart.js'; 
 Chart.register(TimeScale);
 
-
-/*
-
-Range - for each day (month) or month (year) 
-
-NFT API
-  Number of transfers
-  Number of owners
-
-Events API
-  Number of events
-
-*/
-
-//Live vs historical data
 function Home() {
 
   const [vals, setVals] = useState([])
   const [vals2, setVals2] = useState([])
   const [menuSelectedChoice, setMenuSelectedChoice] = useState("API Category")
-  //const [route, setRoute] = useState("")
+  const [route, setRoute] = useState("")
   const [addy, setAddy] = useState("")
+
+  var queryToRoute = {
+    "Transfers by Contract": `nft/${addy}/transfers`,
+    "Transfers by Wallet": `${addy}/nft/transfers`,
+  };
+
 
   const options = {
       responsive: true,
@@ -50,17 +41,35 @@ function Home() {
         text: 'Project Name',
         color:"#0F00B0",
       },
+      plugins:{
+        tooltip:{
+          callbacks:{
+            title: context => {
+              const d = new Date(context[0].parsed.x)
+              const formattedDate = d.toLocaleString([],{
+                month: 'short',
+                year: 'numeric'
+              });
+              return formattedDate
+            }
+          }
+        }
+      },
       scales: {
         x: {
             type: 'time',
             time: {
                 unit: 'month'
+
             }
         },
         A: {
           title: {
             display: true,
             text: 'Number of Transfers'
+          },
+          ticks: {
+            precision: 0
           },
           type: 'linear',
           position: 'left',
@@ -95,24 +104,19 @@ function Home() {
     ],
   };
 
-  /*
-  function magic(){
-    setMenuSelectedChoice("Balance by Wallet")
-    if(menuSelectedChoice === "Balance by Wallet"){
-      setRoute(`${addy}/balance`)
-    }
+  
+  function magic(q){
+    setMenuSelectedChoice(q)
+    setRoute(queryToRoute[q])
   }
-  */
-  //0x895bBc29f74dF77279Bf585116Caa24CE33ed0bA
-  function fA(){
 
+  function getBlockchainData(){
+
+    console.log(route)
     const options = {
       method: 'GET',
-      //url: `https://deep-index.moralis.io/api/v2/${route}`,
-      //url: `https://deep-index.moralis.io/api/v2/0x1c06EC84aa3f8c48E98D7498AAa15F391857304A/balance`,
-      url: `https://deep-index.moralis.io/api/v2/nft/${addy}/transfers`,
-      //url: `https://deep-index.moralis.io/api/v2/{route}`,
-      //url: `https://deep-index.moralis.io/api/v2/nft/0x895bBc29f74dF77279Bf585116Caa24CE33ed0bA/transfers`,
+      url: `https://deep-index.moralis.io/api/v2/${route}`,
+      //url: `https://deep-index.moralis.io/api/v2/nft/{$addy}/transfers`,
       params: {chain: 'eth', format: 'decimal', normalizeMetadata: 'false'},
       headers: {accept: 'application/json', 'X-API-Key': process.env.REACT_APP_TEST_KEY}
     };
@@ -120,8 +124,9 @@ function Home() {
     axios
     .request(options)
     .then(function (response) {
+      
+      console.log(response)
 
-      console.log(response.data.balance)
       var results = response.data.result
       
       const output = results.map((res) => ({b:res.block_timestamp.slice(0,10), ethvalue: Number(res.value)/Math.pow(10,18)}));
@@ -183,19 +188,15 @@ function Home() {
                   {menuSelectedChoice}
                 </MenuButton>
                 <MenuList>
-                  <MenuGroup fontSize='md' title='Balance'>
-                    <MenuItem fontSize='sm' onClick={() => setMenuSelectedChoice("Balance by Wallet")}>Balance by Wallet</MenuItem>
-                    <MenuItem fontSize='sm' onClick={() => setMenuSelectedChoice("ERC20 Token Balance")}>ERC20 Token Balance</MenuItem>
+                  <MenuGroup fontSize='md' title='NFT'>
+                    <MenuItem fontSize='sm' onClick={() => magic("Transfers by Contract")}>Transfers by Contract</MenuItem>
+                    <MenuItem fontSize='sm' onClick={() => magic("Transfers by Wallet")}>Transfers by Wallet</MenuItem>
                   </MenuGroup>
                   <MenuDivider />
-                  <MenuGroup fontSize='md' title='NFT'>
-                    <MenuItem fontSize='sm' onClick={() => setMenuSelectedChoice("Transfers by Contract")}>Transfers by Contract</MenuItem>
-                    <MenuItem fontSize='sm' onClick={() => setMenuSelectedChoice("Transfers by Wallet ")}>Transfers by Wallet</MenuItem>
-                  </MenuGroup>
                 </MenuList>
               </Menu>
               <Input placeholder='enter contract address ...' size='md' width='30vw' onChange={(e) => setAddy(e.target.value)}/> 
-              <Button onClick={fA}>Get Data</Button>
+              <Button onClick={getBlockchainData}>Get Data</Button>
             </Stack>
             <Card width={"80vw"} height={"50vh"}>
               <CardHeader>
